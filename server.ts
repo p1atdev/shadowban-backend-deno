@@ -45,7 +45,7 @@ async function handler(req: Request): Promise<Response> {
             if (isUserExist) {
                 const body = JSON.stringify({
                     screenName: screenName,
-                    restId: isUserExist,
+                    rest_id: isUserExist,
                     exisit: true,
                 })
                 return successResponse(body)
