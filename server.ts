@@ -45,7 +45,7 @@ async function handler(req: Request): Promise<Response> {
             if (isUserExist) {
                 const body = JSON.stringify({
                     screenName: screenName,
-                    rest_id: isUserExist,
+                    restId: isUserExist,
                     exist: true,
                 })
                 return successResponse(body)
@@ -74,7 +74,7 @@ async function handler(req: Request): Promise<Response> {
 
             const body = JSON.stringify({
                 screenName: screenName,
-                suggestion_banned: !isUserInSearchResults,
+                suggestionBanned: !isUserInSearchResults,
             })
 
             return successResponse(body)
@@ -109,14 +109,14 @@ async function handler(req: Request): Promise<Response> {
                 case GhostBanResult.Banned: {
                     const body = JSON.stringify({
                         restId: restId,
-                        ghost_banned: true,
+                        ghostBanned: true,
                     })
                     return successResponse(body)
                 }
                 case GhostBanResult.NotBanned: {
                     const body = JSON.stringify({
                         restId: restId,
-                        ghost_banned: false,
+                        ghostBanned: false,
                     })
                     return successResponse(body)
                 }
