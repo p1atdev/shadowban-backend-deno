@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.125.0/http/server.ts"
 import { Status, STATUS_TEXT } from "https://deno.land/std@0.125.0/http/http_status.ts"
-import { checkIsUserExist, checkIsUserInSearchResults } from "./v1.ts"
+import { checkIsUserExist, checkIsUserSuggestionBanned, checkIsUserGhostBanned, GhostBanResult } from "./v1.ts"
 
 // サーバー立てる
 serve(handler, { port: 80 })
@@ -70,7 +70,7 @@ async function handler(req: Request): Promise<Response> {
                 return errorMessage(Status.BadRequest)
             }
 
-            const isUserInSearchResults = await checkIsUserInSearchResults(screenName)
+            const isUserInSearchResults = await checkIsUserSuggestionBanned(screenName)
 
             const body = JSON.stringify({
                 screenName: screenName,
@@ -78,6 +78,76 @@ async function handler(req: Request): Promise<Response> {
             })
 
             return successResponse(body)
+        }
+
+        case "/v1/ghost_ban": {
+            const check = checkMethod(req, "GET")
+            if (check) {
+                return check
+            }
+
+            const restId = url.searchParams.get("restId")
+
+            if (!restId) {
+                return errorMessage(Status.BadRequest)
+            }
+
+            const isUserInReplyTree = await checkIsUserGhostBanned(restId)
+            switch (isUserInReplyTree) {
+                case GhostBanResult.NotExist: {
+                    const body = JSON.stringify({
+                        message: "Given restId is not exist",
+                        restId: restId,
+                    })
+                    return new Response(body, {
+                        status: Status.BadRequest,
+                        headers: new Headers({
+                            "content-type": "text/plain",
+                        }),
+                    })
+                }
+                case GhostBanResult.Banned: {
+                    const body = JSON.stringify({
+                        restId: restId,
+                        ghost_banned: true,
+                    })
+                    return successResponse(body)
+                }
+                case GhostBanResult.NotBanned: {
+                    const body = JSON.stringify({
+                        restId: restId,
+                        ghost_banned: false,
+                    })
+                    return successResponse(body)
+                }
+                case GhostBanResult.UnknownError: {
+                    const body = JSON.stringify({
+                        message: "Unknown error",
+                        restId: restId,
+                    })
+                    return new Response(body, {
+                        status: Status.InternalServerError,
+                        headers: new Headers({
+                            "content-type": "application/json: charset=utf-8",
+                        }),
+                    })
+                }
+                case GhostBanResult.Unrecognizable: {
+                    const body = JSON.stringify({
+                        message: "Unable to determine if ghost banned",
+                        restId: restId,
+                    })
+                    return new Response(body, {
+                        status: Status.InternalServerError,
+                        headers: new Headers({
+                            "content-type": "application/json: charset=utf-8",
+                        }),
+                    })
+                }
+                default: {
+                    return errorMessage(Status.InternalServerError)
+                }
+            }
         }
 
         default: {
@@ -118,7 +188,7 @@ function errorMessage(code: number): Response {
     return new Response(body, {
         status: code,
         headers: new Headers({
-            "content-type": "application/json",
+            "content-type": "application/json; charset=utf-8",
         }),
     })
 }
@@ -127,7 +197,7 @@ function successResponse(body: string): Response {
     return new Response(body, {
         status: Status.OK,
         headers: new Headers({
-            "content-type": "application/json",
+            "content-type": "application/json; charset=utf-8",
         }),
     })
 }
