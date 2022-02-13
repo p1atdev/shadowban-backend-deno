@@ -46,13 +46,13 @@ async function handler(req: Request): Promise<Response> {
                 const body = JSON.stringify({
                     screenName: screenName,
                     rest_id: isUserExist,
-                    exisit: true,
+                    exist: true,
                 })
                 return successResponse(body)
             } else {
                 const body = JSON.stringify({
                     screenName: screenName,
-                    exisit: false,
+                    exist: false,
                 })
                 return successResponse(body)
             }
