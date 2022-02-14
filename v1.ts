@@ -6,35 +6,46 @@ import {
 } from "https://deno.land/x/twitterql@0.0.15/src/twitter/mod.ts"
 
 export async function checkIsUserExist(screenName: string): Promise<string | null> {
-    const targetUser = await getUserByScreenName({
-        screen_name: screenName,
-    })
+    try {
+        const targetUser = await getUserByScreenName({
+            screen_name: screenName,
+        })
 
-    if (targetUser.data.user) {
-        return targetUser.data.user!.result.rest_id
-    } else {
+        if (targetUser.data.user) {
+            return targetUser.data.user!.result.rest_id
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.log(error)
         return null
     }
 }
 
-export async function checkIsUserSuggestionBanned(screenName: string): Promise<boolean> {
-    const searchResults = await getSearchTypehead({
-        q: `@${screenName}`,
-        result_type: "users",
-    })
+export async function checkIsUserSuggestionBanned(screenName: string): Promise<boolean | Error> {
+    try {
+        const searchResults = await getSearchTypehead({
+            q: `@${screenName}`,
+            result_type: "users",
+        })
 
-    return searchResults.users.length != 0
+        return searchResults.users.length != 0
+    } catch (error) {
+        console.log(error)
+        return Error(error)
+    }
 }
 
-export enum GhostBanResult {
+export enum ReplyBanResult {
     NotExist,
     Unrecognizable,
     NotBanned,
     UnknownError,
-    Banned,
+    GhostBanned,
+    ReplyDeboosting,
 }
 
-export async function checkIsUserGhostBanned(restId: string): Promise<GhostBanResult> {
+export async function checkIsUserReplyBanned(restId: string): Promise<ReplyBanResult> {
     try {
         const tweetsAndReplies = await getUserTweetsAndReplies({
             userId: restId,
@@ -73,13 +84,13 @@ export async function checkIsUserGhostBanned(restId: string): Promise<GhostBanRe
         })?.result.legacy.id_str
 
         if (!targetReplyTweet) {
-            return GhostBanResult.Unrecognizable
+            return ReplyBanResult.Unrecognizable
         }
 
         const targetReplyTweetSource = replySourceTweetIds[0]
 
         if (!targetReplyTweetSource.tweet) {
-            return GhostBanResult.UnknownError
+            return ReplyBanResult.UnknownError
         }
 
         const tweetDetail = await getTweetDetail({
@@ -102,12 +113,27 @@ export async function checkIsUserGhostBanned(restId: string): Promise<GhostBanRe
             })
 
         if (filteredReplyTree.length === 0) {
-            return GhostBanResult.Banned
+            const cursors = replyTreeInstruction
+                .flatMap((instruction) => {
+                    return instruction.entries
+                })
+                .flatMap((entry) => {
+                    return entry?.content.items?.filter((item) => {
+                        return item.item.itemContent.itemType === "TimelineTimelineCursor"
+                    })
+                })
+            if (cursors.length === 0) {
+                // ghost banned
+                return ReplyBanResult.GhostBanned
+            } else {
+                // maybe reply deboosting
+                return ReplyBanResult.ReplyDeboosting
+            }
         } else {
-            return GhostBanResult.NotBanned
+            return ReplyBanResult.NotBanned
         }
     } catch (error) {
         console.log(error)
-        return GhostBanResult.UnknownError
+        return ReplyBanResult.UnknownError
     }
 }

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.125.0/http/server.ts"
 import { Status, STATUS_TEXT } from "https://deno.land/std@0.125.0/http/http_status.ts"
-import { checkIsUserExist, checkIsUserSuggestionBanned, checkIsUserGhostBanned, GhostBanResult } from "./v1.ts"
+import { checkIsUserExist, checkIsUserSuggestionBanned, checkIsUserReplyBanned, ReplyBanResult } from "./v1.ts"
 
 // サーバー立てる
 serve(handler, { port: 80 })
@@ -8,15 +8,9 @@ serve(handler, { port: 80 })
 console.log("http://localhost:80/")
 
 async function handler(req: Request): Promise<Response> {
-    // function handler(req: Request): Response {
-    console.log("Method:", req.method)
-
     const url = new URL(req.url)
     const path = url.pathname
     console.log("Path:", path)
-    // console.log("Query parameters:", url.searchParams)
-
-    // console.log("Headers:", req.headers)
 
     switch (path) {
         case "/": {
@@ -61,6 +55,7 @@ async function handler(req: Request): Promise<Response> {
         case "/v1/suggestion_ban": {
             const check = checkMethod(req, "GET")
             if (check) {
+                console.log(check)
                 return check
             }
 
@@ -80,9 +75,10 @@ async function handler(req: Request): Promise<Response> {
             return successResponse(body)
         }
 
-        case "/v1/ghost_ban": {
+        case "/v1/reply_ban": {
             const check = checkMethod(req, "GET")
             if (check) {
+                console.log(check)
                 return check
             }
 
@@ -92,57 +88,73 @@ async function handler(req: Request): Promise<Response> {
                 return errorMessage(Status.BadRequest)
             }
 
-            const isUserInReplyTree = await checkIsUserGhostBanned(restId)
+            const isUserInReplyTree = await checkIsUserReplyBanned(restId)
             switch (isUserInReplyTree) {
-                case GhostBanResult.NotExist: {
+                case ReplyBanResult.NotExist: {
                     const body = JSON.stringify({
                         message: "Given restId is not exist",
                         restId: restId,
                     })
-                    return new Response(body, {
+                    const res = new Response(body, {
                         status: Status.BadRequest,
                         headers: new Headers({
                             "content-type": "text/plain",
                         }),
                     })
+                    console.log(res)
+                    return res
                 }
-                case GhostBanResult.Banned: {
+                case ReplyBanResult.GhostBanned: {
                     const body = JSON.stringify({
                         restId: restId,
                         ghostBanned: true,
+                        replyDeboosting: false,
                     })
                     return successResponse(body)
                 }
-                case GhostBanResult.NotBanned: {
+                case ReplyBanResult.ReplyDeboosting: {
                     const body = JSON.stringify({
                         restId: restId,
                         ghostBanned: false,
+                        replyDeboosting: true,
                     })
                     return successResponse(body)
                 }
-                case GhostBanResult.UnknownError: {
+                case ReplyBanResult.NotBanned: {
+                    const body = JSON.stringify({
+                        restId: restId,
+                        ghostBanned: false,
+                        replyDeboosting: false,
+                    })
+                    return successResponse(body)
+                }
+                case ReplyBanResult.UnknownError: {
                     const body = JSON.stringify({
                         message: "Unknown error",
                         restId: restId,
                     })
-                    return new Response(body, {
+                    const res = new Response(body, {
                         status: Status.InternalServerError,
                         headers: new Headers({
                             "content-type": "application/json: charset=utf-8",
                         }),
                     })
+                    console.log(res)
+                    return res
                 }
-                case GhostBanResult.Unrecognizable: {
+                case ReplyBanResult.Unrecognizable: {
                     const body = JSON.stringify({
                         message: "Unable to determine if ghost banned",
                         restId: restId,
                     })
-                    return new Response(body, {
+                    const res = new Response(body, {
                         status: Status.InternalServerError,
                         headers: new Headers({
                             "content-type": "application/json: charset=utf-8",
                         }),
                     })
+                    console.log(res)
+                    return res
                 }
                 default: {
                     return errorMessage(Status.InternalServerError)
@@ -152,12 +164,14 @@ async function handler(req: Request): Promise<Response> {
 
         default: {
             const body = JSON.stringify({ message: "NOT FOUND" })
-            return new Response(body, {
+            const res = new Response(body, {
                 status: 404,
                 headers: {
                     "content-type": "application/json; charset=utf-8",
                 },
             })
+            console.log(res)
+            return res
         }
     }
 }
@@ -171,12 +185,14 @@ async function handler(req: Request): Promise<Response> {
 function checkMethod(req: Request, allow: string): Response | null {
     if (req.method !== allow) {
         const body = JSON.stringify({ message: STATUS_TEXT.get(Status.MethodNotAllowed) })
-        return new Response(body, {
+        const res = new Response(body, {
             status: Status.MethodNotAllowed,
             headers: new Headers({
                 "content-type": "application/json",
             }),
         })
+        console.log(res)
+        return res
     } else {
         return null
     }
@@ -185,19 +201,22 @@ function checkMethod(req: Request, allow: string): Response | null {
 // parameter error message
 function errorMessage(code: number): Response {
     const body = JSON.stringify({ message: STATUS_TEXT.get(code) })
-    return new Response(body, {
+    const res = new Response(body, {
         status: code,
         headers: new Headers({
             "content-type": "application/json; charset=utf-8",
         }),
     })
+    return res
 }
 
 function successResponse(body: string): Response {
-    return new Response(body, {
+    const res = new Response(body, {
         status: Status.OK,
         headers: new Headers({
             "content-type": "application/json; charset=utf-8",
         }),
     })
+    console.log(res)
+    return res
 }
