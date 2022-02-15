@@ -39,15 +39,13 @@ export async function checkIsUserSuggestionBanned(screenName: string): Promise<b
     try {
         const searchResults = await getSearchTypehead({
             q: `@${screenName}`,
-            result_type: "users",
+            // result_type: "users",
             // query_source: "typed_query"
         })
 
-        console.log(searchResults.users)
-
         return (
             searchResults.users.filter((user) => {
-                user.screen_name == screenName
+                return user.screen_name === screenName
             }).length == 0
         )
     } catch (error) {
