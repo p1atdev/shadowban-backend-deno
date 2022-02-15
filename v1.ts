@@ -45,7 +45,8 @@ export async function checkIsUserSuggestionBanned(screenName: string): Promise<b
 
         return (
             searchResults.users.filter((user) => {
-                return user.screen_name === screenName
+                // user.screen_name's lowercase
+                return user.screen_name.toLowerCase() === screenName.toLowerCase()
             }).length == 0
         )
     } catch (error) {
