@@ -28,6 +28,15 @@ async function handler(req: Request): Promise<Response> {
             })
         }
 
+        case "/status": {
+            return successResponse(
+                JSON.stringify({
+                    message: "Running",
+                    status: "ok",
+                })
+            )
+        }
+
         case "/v1/user": {
             const check = checkMethod(req, "GET")
             if (check) {
@@ -68,7 +77,7 @@ async function handler(req: Request): Promise<Response> {
 
             const body = JSON.stringify({
                 screenName: screenName,
-                suggestionBanned: isInSuggestion,
+                suggestionBanned: isInSuggestion!,
             })
 
             return successResponse(body)
@@ -89,9 +98,11 @@ async function handler(req: Request): Promise<Response> {
 
             const isUserSearchBanned = await checkIsUserSearchBanned(screenName)
 
+            console.log(isUserSearchBanned)
+
             const body = JSON.stringify({
                 screenName: screenName,
-                searchBanned: isUserSearchBanned,
+                searchBanned: isUserSearchBanned!,
             })
 
             return successResponse(body)

@@ -40,9 +40,16 @@ export async function checkIsUserSuggestionBanned(screenName: string): Promise<b
         const searchResults = await getSearchTypehead({
             q: `@${screenName}`,
             result_type: "users",
+            // query_source: "typed_query"
         })
 
-        return searchResults.users.length == 0
+        console.log(searchResults.users)
+
+        return (
+            searchResults.users.filter((user) => {
+                user.screen_name == screenName
+            }).length == 0
+        )
     } catch (error) {
         console.log(error)
         return null
@@ -52,16 +59,19 @@ export async function checkIsUserSuggestionBanned(screenName: string): Promise<b
 export async function checkIsUserSearchBanned(screenName: string): Promise<boolean | null> {
     try {
         const searchResults = await getSearchAdaptive({
-            q: `@${screenName}`,
-            count: 1,
+            q: `from:@${screenName}`,
+            count: 3,
+            // spelling_corrections: 0,
         })
 
-        console.log("isObject:", searchResults.globalObjects.constructor === Object)
-        console.log("isEmpty:", Object.keys(searchResults.globalObjects.tweets).length != 0)
+        // console.log(searchResults.globalObjects)
+
+        // console.log("isObject:", searchResults.globalObjects.constructor === Object)
+        // console.log("isEmpty:", Object.keys(searchResults.globalObjects.tweets).length == 0)
 
         return (
             searchResults.globalObjects.constructor === Object &&
-            Object.keys(searchResults.globalObjects.tweets).length != 0
+            Object.keys(searchResults.globalObjects.tweets).length == 0
         )
     } catch (error) {
         console.log(error)
