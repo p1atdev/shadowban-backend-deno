@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.125.0/http/server.ts"
 import { Status, STATUS_TEXT } from "https://deno.land/std@0.125.0/http/http_status.ts"
-import { checkIsUserExist, checkIsUserSuggestionBanned, checkIsUserReplyBanned, ReplyBanResult } from "./v1.ts"
+import {
+    checkUser,
+    checkIsUserSuggestionBanned,
+    checkIsUserReplyBanned,
+    ReplyBanResult,
+    checkIsUserSearchBanned,
+} from "./v1.ts"
 
 // サーバー立てる
 serve(handler, { port: 80 })
@@ -22,7 +28,7 @@ async function handler(req: Request): Promise<Response> {
             })
         }
 
-        case "/v1/exist": {
+        case "/v1/user": {
             const check = checkMethod(req, "GET")
             if (check) {
                 return check
@@ -34,22 +40,15 @@ async function handler(req: Request): Promise<Response> {
                 return errorMessage(Status.BadRequest)
             }
 
-            const isUserExist = await checkIsUserExist(screenName)
+            const user = await checkUser(screenName)
 
-            if (isUserExist) {
-                const body = JSON.stringify({
-                    screenName: screenName,
-                    restId: isUserExist,
-                    exist: true,
-                })
-                return successResponse(body)
-            } else {
-                const body = JSON.stringify({
-                    screenName: screenName,
-                    exist: false,
-                })
-                return successResponse(body)
-            }
+            const body = JSON.stringify({
+                screenName: screenName,
+                exists: user.exists,
+                restId: user.restId,
+                protected: user.protected,
+            })
+            return successResponse(body)
         }
 
         case "/v1/suggestion_ban": {
@@ -65,11 +64,34 @@ async function handler(req: Request): Promise<Response> {
                 return errorMessage(Status.BadRequest)
             }
 
-            const isUserInSearchResults = await checkIsUserSuggestionBanned(screenName)
+            const isInSuggestion = await checkIsUserSuggestionBanned(screenName)
 
             const body = JSON.stringify({
                 screenName: screenName,
-                suggestionBanned: !isUserInSearchResults,
+                suggestionBanned: isInSuggestion,
+            })
+
+            return successResponse(body)
+        }
+
+        case "/v1/search_ban": {
+            const check = checkMethod(req, "GET")
+            if (check) {
+                console.log(check)
+                return check
+            }
+
+            const screenName = url.searchParams.get("screenName")
+
+            if (!screenName) {
+                return errorMessage(Status.BadRequest)
+            }
+
+            const isUserSearchBanned = await checkIsUserSearchBanned(screenName)
+
+            const body = JSON.stringify({
+                screenName: screenName,
+                searchBanned: isUserSearchBanned,
             })
 
             return successResponse(body)
@@ -191,7 +213,7 @@ function checkMethod(req: Request, allow: string): Response | null {
                 "content-type": "application/json",
             }),
         })
-        console.log(res)
+        // console.log(res.body)
         return res
     } else {
         return null
@@ -207,6 +229,7 @@ function errorMessage(code: number): Response {
             "content-type": "application/json; charset=utf-8",
         }),
     })
+    console.log(body)
     return res
 }
 
@@ -217,6 +240,6 @@ function successResponse(body: string): Response {
             "content-type": "application/json; charset=utf-8",
         }),
     })
-    console.log(res)
+    console.log(body)
     return res
 }
