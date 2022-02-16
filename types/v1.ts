@@ -3,4 +3,5 @@ export interface User {
     exists: boolean
     restId?: string
     protected?: boolean
+    hasTweets?: boolean
 }

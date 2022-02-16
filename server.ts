@@ -33,6 +33,7 @@ async function handler(req: Request): Promise<Response> {
                 JSON.stringify({
                     message: "Running",
                     status: "ok",
+                    available: true,
                 })
             )
         }
@@ -56,6 +57,7 @@ async function handler(req: Request): Promise<Response> {
                 exists: user.exists,
                 restId: user.restId,
                 protected: user.protected,
+                hasTweets: user.hasTweets,
             })
             return successResponse(body)
         }

@@ -19,6 +19,7 @@ export async function checkUser(screenName: string): Promise<User> {
                 exists: true,
                 restId: targetUser.data.user!.result.rest_id,
                 protected: targetUser.data.user!.result.legacy.protected,
+                hasTweets: targetUser.data.user!.result.legacy.statuses_count > 1,
             }
         } else {
             return {
