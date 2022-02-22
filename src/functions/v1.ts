@@ -5,7 +5,7 @@ import {
     getSearchTypehead,
     getSearchAdaptive,
 } from "https://deno.land/x/twitterql@0.1.1/src/twitter/mod.ts"
-import { User } from "./types/v1.ts"
+import { User } from "../../types/v1.ts"
 
 export async function checkUser(screenName: string): Promise<User> {
     try {
@@ -40,8 +40,6 @@ export async function checkIsUserSuggestionBanned(screenName: string): Promise<b
     try {
         const searchResults = await getSearchTypehead({
             q: `@${screenName}`,
-            // result_type: "users",
-            // query_source: "typed_query"
         })
 
         return (
@@ -61,14 +59,7 @@ export async function checkIsUserSearchBanned(screenName: string): Promise<boole
         const searchResults = await getSearchAdaptive({
             q: `from:@${screenName}`,
             count: 3,
-            // spelling_corrections: 0,
         })
-
-        // console.log(searchResults.globalObjects)
-
-        // console.log("isObject:", searchResults.globalObjects.constructor === Object)
-        // console.log("isEmpty:", Object.keys(searchResults.globalObjects.tweets).length == 0)
-
         return (
             searchResults.globalObjects.constructor === Object &&
             Object.keys(searchResults.globalObjects.tweets).length == 0

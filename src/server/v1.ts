@@ -6,7 +6,7 @@ import {
     checkIsUserReplyBanned,
     ReplyBanResult,
     checkIsUserSearchBanned,
-} from "./v1.ts"
+} from "../functions/v1.ts"
 
 // サーバー立てる
 serve(handler, { port: 80 })
@@ -28,7 +28,7 @@ async function handler(req: Request): Promise<Response> {
             })
         }
 
-        case "/status": {
+        case "/v1/status": {
             return successResponse(
                 JSON.stringify({
                     message: "Running",
