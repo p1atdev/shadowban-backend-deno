@@ -65,6 +65,8 @@ export class Server {
         try {
             const suggestionBanStatus = await this.client.checkIsUserSuggestionBanned(screenName)
 
+            console.log(`[v2/suggestion_ban] suggestionBanStatus: ${JSON.stringify(suggestionBanStatus)}`)
+
             return c.json(suggestionBanStatus)
         } catch (error) {
             return c.json(error, Status.InternalServerError)
