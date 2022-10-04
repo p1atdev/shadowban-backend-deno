@@ -5,6 +5,7 @@ import {
     GetSearchTypehead,
     GetTweetDetail,
     GetUserByScreenName,
+    GetUserTweets,
     GetUserTweetsAndReplies,
 } from "../../types/v3/mod.ts"
 
@@ -29,8 +30,6 @@ export class V3 {
                     restId: targetUser.data.user!.result.rest_id,
                     protected: targetUser.data.user!.result.legacy.protected,
                     hasTweets: targetUser.data.user!.result.legacy.statuses_count > 1,
-                    // guestToken: guestToken,
-                    // queries: queries,
                 }
             } else {
                 return {
@@ -73,14 +72,45 @@ export class V3 {
 
     checkIsUserSearchBanned = async (screenName: string): Promise<SearchBan> => {
         try {
-            const getSearchAdaptive = new GetSearchAdaptive(this.client)
-            const searchResults = await getSearchAdaptive.get({
-                q: `from:@${screenName}`,
-                count: 5,
+            const getUserByScreenName = new GetUserByScreenName(this.client)
+            const targetUser = await getUserByScreenName.get({
+                screen_name: screenName,
             })
+            const restId = targetUser.data.user!.result.rest_id
 
-            const isSearchBanned =
-                searchResults.timeline.constructor === Object && Object.values(searchResults.timeline).length == 0
+            const getUserTweetsAndReplies = new GetUserTweetsAndReplies(this.client)
+            const getSearchAdaptive = new GetSearchAdaptive(this.client)
+
+            const [tweetsAndReplies, searchResults] = await Promise.all([
+                getUserTweetsAndReplies.get({
+                    userId: restId,
+                    count: 5,
+                }),
+                getSearchAdaptive.get({
+                    q: `from:@${screenName}`,
+                    count: 5,
+                    tweet_search_mode: "live",
+                }),
+            ])
+
+            const expectedTweetIds =
+                tweetsAndReplies.data.user.result.timeline_v2.timeline.instructions
+                    .find((i) => i.type === "TimelineAddEntries")
+                    ?.entries?.map((e) => e.content.itemContent?.tweet_results.result.rest_id)
+                    .filter((id) => id) ?? []
+
+            const actualTweetIds = Object.keys(searchResults.globalObjects.tweets)
+
+            const latestTweetId = expectedTweetIds[0]
+
+            if (latestTweetId == undefined) {
+                return {
+                    screenName: screenName,
+                    banned: false,
+                }
+            }
+
+            const isSearchBanned = !actualTweetIds.includes(latestTweetId)
 
             return {
                 screenName: screenName,
