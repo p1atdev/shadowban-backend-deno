@@ -88,7 +88,7 @@ export interface Timeline {
 }
 
 export interface Instruction {
-    type: string
+    type: "TimelineAddEntries" | "TimelineClearCache"
     entries?: Entry[]
 }
 
