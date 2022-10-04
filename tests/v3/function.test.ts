@@ -5,6 +5,7 @@ import {
     GetTweetDetail,
     GetSearchTypehead,
     GetSearchAdaptive,
+    GetUserByRestId,
 } from "../../types/v3/mod.ts"
 
 const client = new TwitterAPI()
@@ -15,6 +16,16 @@ Deno.test("get user by screen name", async () => {
     const getUserByScreenName = new GetUserByScreenName(client)
     const res = await getUserByScreenName.get({
         screen_name: "Twitter",
+    })
+
+    assertExists(res.data.user.result.id)
+    assertEquals(res.data.user.result.rest_id, twitterRestId)
+})
+
+Deno.test("get user by rest id", async () => {
+    const getUserByRestId = new GetUserByRestId(client)
+    const res = await getUserByRestId.get({
+        userId: twitterRestId,
     })
 
     assertExists(res.data.user.result.id)
