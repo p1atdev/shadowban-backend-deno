@@ -15,8 +15,6 @@ Deno.test("get user by screen name", async () => {
     const getUserByScreenName = new GetUserByScreenName(client)
     const res = await getUserByScreenName.get({
         screen_name: "Twitter",
-        withSafetyModeUserFields: false,
-        withSuperFollowsUserFields: false,
     })
 
     assertExists(res.data.user.result.id)

@@ -3,8 +3,6 @@ import { TwitterAPI } from "../../deps.ts"
 
 export interface GetUserByScreenNameVariables {
     screen_name: string
-    withSafetyModeUserFields: false
-    withSuperFollowsUserFields: false
 }
 
 const GetUserTweetsAndRepliesFeatures = {
@@ -25,13 +23,18 @@ export class GetUserByScreenName implements TwitterRequest {
             path: "UserByScreenName",
             query: {
                 data: {
-                    variables: JSON.stringify(variables),
+                    variables: JSON.stringify({ ...variables, ...this.variablesTemplate }),
                     features: JSON.stringify(GetUserTweetsAndRepliesFeatures),
                 },
             },
         })
         const json: GetUserByScreenNameRes = await res.json()
         return json
+    }
+
+    private variablesTemplate = {
+        withSafetyModeUserFields: false,
+        withSuperFollowsUserFields: false,
     }
 }
 
