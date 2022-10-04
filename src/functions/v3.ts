@@ -130,11 +130,15 @@ export class V3 {
                     return reply?.user && reply?.tweet
                 })
 
-            const targetReplyTweet = replies.find((reply) => {
-                return reply ? true : false
-            })?.result.legacy.id_str
+            const targetReplyTweet = replies
+                .filter((reply) => {
+                    return reply ? true : false
+                })
+                .map((t) => {
+                    return t?.result.legacy.id_str
+                })
 
-            if (!targetReplyTweet) {
+            if (targetReplyTweet.length === 0) {
                 return {
                     restId: restId,
                     recognizable: false,
@@ -187,10 +191,10 @@ export class V3 {
                     return entry?.content.itemContent?.tweet_results?.result.legacy
                 })
                 .filter((reply) => {
-                    return reply?.id_str === targetReplyTweet
+                    return targetReplyTweet.includes(reply?.id_str)
                 })
 
-            if (filteredReplyTree.length === 0) {
+            if (filteredReplyTree.length !== 0) {
                 const cursors = replyTreeInstruction
                     .flatMap((instruction) => {
                         return instruction.entries
