@@ -58,5 +58,5 @@ Deno.test("search adaptive", async () => {
         count: 20,
     })
 
-    assertNotEquals(Object.values(res.globalObjects.tweets).length, 0)
+    assertNotEquals(Object.values(res.timeline.instructions).length, 0)
 })

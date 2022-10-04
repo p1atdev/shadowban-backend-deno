@@ -87,13 +87,13 @@ export interface Entry {
 export interface Content {
     entryType: string
     __typename: string
-    itemContent: ItemContent
+    itemContent?: ItemContent
 }
 
 export interface ItemContent {
     itemType: string
     __typename: string
-    tweet_results: TweetResults
+    tweet_results?: TweetResults
     tweetDisplayType: string
     hasModeratedReplies: boolean
 }

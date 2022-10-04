@@ -9,10 +9,10 @@ export class Server {
 
     constructor() {
         this.app.get("/v2/status", this.status)
-        this.app.get("/v2/user", this.user)
-        this.app.get("/v2/suggestion_ban", this.suggestion_ban)
-        this.app.get("/v2/search_ban", this.search_ban)
-        this.app.get("/v2/reply_ban", this.reply_ban)
+        this.app.post("/v2/user", this.user)
+        this.app.post("/v2/suggestion_ban", this.suggestion_ban)
+        this.app.post("/v2/search_ban", this.search_ban)
+        this.app.post("/v2/reply_ban", this.reply_ban)
     }
 
     start() {
@@ -20,12 +20,6 @@ export class Server {
     }
 
     private status = (c: ReqContext) => {
-        const check = this.checkMethod(c.req, "GET")
-        if (check) {
-            c.status(Status.BadRequest)
-            return c.text(check)
-        }
-
         return c.json({
             message: "Running",
             status: "ok",
@@ -34,83 +28,78 @@ export class Server {
     }
 
     private user = async (c: ReqContext) => {
-        const check = this.checkMethod(c.req, "POST")
-        if (check) {
-            c.status(Status.BadRequest)
-            return c.text(check)
-        }
-
         const reqJson = await c.req.json()
 
         const screenName = reqJson.screenName
+
+        console.log(`[v2/user] screenName: ${screenName}`)
 
         if (!screenName) {
             c.status(Status.BadRequest)
             return c.text("Missing screenName")
         }
 
-        const userStatus = await this.client.checkUser(screenName)
+        try {
+            const userStatus = await this.client.checkUser(screenName)
 
-        const body = JSON.stringify(userStatus)
-        return c.json(body, Status.OK)
+            console.log(`[v2/user] userStatus: ${JSON.stringify(userStatus)}`)
+
+            return c.json(userStatus)
+        } catch (error) {
+            return c.json(error, Status.InternalServerError)
+        }
     }
 
     private suggestion_ban = async (c: ReqContext) => {
-        const check = this.checkMethod(c.req, "POST")
-        if (check) {
-            c.status(Status.BadRequest)
-            return c.text(check)
-        }
-
         const reqJson = await c.req.json()
 
         const screenName = reqJson.screenName
+
+        console.log(`[v2/suggestion_ban] screenName: ${screenName}`)
 
         if (!screenName) {
             c.status(Status.BadRequest)
             return c.text("Missing screenName")
         }
 
-        const suggestionBanStatus = await this.client.checkIsUserSuggestionBanned(screenName)
+        try {
+            const suggestionBanStatus = await this.client.checkIsUserSuggestionBanned(screenName)
 
-        const body = JSON.stringify(suggestionBanStatus)
-
-        return c.json(body)
+            return c.json(suggestionBanStatus)
+        } catch (error) {
+            return c.json(error, Status.InternalServerError)
+        }
     }
 
     private search_ban = async (c: ReqContext) => {
-        const check = this.checkMethod(c.req, "POST")
-        if (check) {
-            c.status(Status.BadRequest)
-            return c.text(check)
-        }
-
         const reqJson = await c.req.json()
 
         const screenName = reqJson.screenName
+
+        console.log(`[v2/search_ban] screenName: ${screenName}`)
 
         if (!screenName) {
             c.status(Status.BadRequest)
             return c.text("Missing screenName")
         }
 
-        const searchBanStatus = await this.client.checkIsUserSearchBanned(screenName)
+        try {
+            const searchBanStatus = await this.client.checkIsUserSearchBanned(screenName)
 
-        const body = JSON.stringify(searchBanStatus)
+            console.log(`[v2/search_ban] searchBanStatus: ${JSON.stringify(searchBanStatus)}`)
 
-        return c.json(body)
+            return c.json(searchBanStatus)
+        } catch (error) {
+            return c.json(error, Status.InternalServerError)
+        }
     }
 
     private reply_ban = async (c: ReqContext) => {
-        const check = this.checkMethod(c.req, "POST")
-        if (check) {
-            c.status(Status.BadRequest)
-            return c.text(check)
-        }
-
         const reqJson = await c.req.json()
 
         const restId = reqJson.restId
+
+        console.log(`[v2/reply_ban] restId: ${restId}`)
 
         if (!restId) {
             c.status(Status.BadRequest)
@@ -120,27 +109,11 @@ export class Server {
         try {
             const replyBanStatus = await this.client.checkIsUserReplyBanned(restId)
 
-            const body = JSON.stringify(replyBanStatus)
+            console.log(`[v2/reply_ban] replyBanStatus: ${JSON.stringify(replyBanStatus)}`)
 
-            return c.json(body)
+            return c.json(replyBanStatus)
         } catch (error) {
-            const res = c.json(error, Status.BadRequest)
-            console.log(res)
-            return res
-        }
-    }
-
-    /**
-     * Check request method
-     * @param req Request
-     * @param allow Allowed method
-     * @returns Return error response if method is not allowed
-     */
-    private checkMethod = (req: Request, allow: string): string | null => {
-        if (req.method !== allow) {
-            return "BAD REQUEST"
-        } else {
-            return null
+            return c.json(error, Status.InternalServerError)
         }
     }
 }

@@ -80,8 +80,7 @@ export class V3 {
             })
 
             const isSearchBanned =
-                searchResults.globalObjects.constructor === Object &&
-                Object.keys(searchResults.globalObjects.tweets).length == 0
+                searchResults.timeline.constructor === Object && Object.values(searchResults.timeline).length == 0
 
             return {
                 screenName: screenName,
@@ -115,7 +114,7 @@ export class V3 {
                     return tweet?.content.itemContent?.tweet_results
                 })
                 .map((tweetResult) => {
-                    if (tweetResult?.result.legacy.in_reply_to_screen_name) {
+                    if (tweetResult?.result.legacy?.in_reply_to_screen_name) {
                         return tweetResult
                     }
                 })
@@ -123,8 +122,8 @@ export class V3 {
             const replySourceTweetIds = replies
                 .map((reply) => {
                     return {
-                        user: reply?.result.legacy.in_reply_to_screen_name,
-                        tweet: reply?.result.legacy.in_reply_to_status_id_str,
+                        user: reply?.result.legacy?.in_reply_to_screen_name,
+                        tweet: reply?.result.legacy?.in_reply_to_status_id_str,
                     }
                 })
                 .filter((reply) => {
@@ -185,7 +184,7 @@ export class V3 {
                     return instruction.entries
                 })
                 .flatMap((entry) => {
-                    return entry?.content.itemContent.tweet_results?.result.legacy
+                    return entry?.content.itemContent?.tweet_results?.result.legacy
                 })
                 .filter((reply) => {
                     return reply?.id_str === targetReplyTweet
@@ -197,8 +196,12 @@ export class V3 {
                         return instruction.entries
                     })
                     .flatMap((entry) => {
-                        return entry?.content.itemContent.itemType === "TimelineTimelineCursor"
+                        return entry?.content.itemContent?.itemType === "TimelineTimelineCursor"
                     })
+                    .filter((cursor) => {
+                        return cursor
+                    })
+
                 if (cursors.length === 0) {
                     // ghost banned
                     return {
