@@ -4,6 +4,8 @@ import { TwitterAPI } from "../../deps.ts"
 export interface GetSearchAdaptiveQueries {
     q: string
     count: number
+    tweet_search_mode?: "live" | "user"
+    result_filter?: "image" | "video"
 }
 
 export class GetSearchAdaptive implements TwitterRequest {
@@ -53,7 +55,8 @@ export class GetSearchAdaptive implements TwitterRequest {
         include_ext_trusted_friends_metadata: "true",
         send_error_codes: "false",
         simple_quoted_tweet: "true",
-        pc: "0",
+        query_source: "	typed_query",
+        pc: "1",
         spelling_corrections: "1",
         include_ext_edit_control: "true",
         ext: "mediaStats,highlightedLabel,hasNftAvatar,voiceInfo,enrichments,superFollowMetadata,unmentionInfo,editControl,collab_control,vibe",
@@ -87,13 +90,12 @@ export interface TweetValue {
     truncated: boolean
     display_text_range: number[]
     entities: TweetEntities
-    extended_entities: ExtendedEntities
     source: string
-    in_reply_to_status_id: null
-    in_reply_to_status_id_str: null
-    in_reply_to_user_id: null
-    in_reply_to_user_id_str: null
-    in_reply_to_screen_name: null
+    in_reply_to_status_id: number
+    in_reply_to_status_id_str: string
+    in_reply_to_user_id: number
+    in_reply_to_user_id_str: string
+    in_reply_to_screen_name: string
     user_id: number
     user_id_str: string
     geo: null
@@ -109,87 +111,19 @@ export interface TweetValue {
     conversation_id_str: string
     favorited: boolean
     retweeted: boolean
-    possibly_sensitive: boolean
-    possibly_sensitive_editable: boolean
-    lang: Lang
+    lang: string
     supplemental_language: null
     ext_edit_control: EXTEditControl
     ext: TweetEXT
-    self_thread?: SelfThread
+    possibly_sensitive?: boolean
+    possibly_sensitive_editable?: boolean
 }
 
 export interface TweetEntities {
-    hashtags: Hashtag[]
+    hashtags: any[]
     symbols: any[]
-    user_mentions: any[]
+    user_mentions: UserMention[]
     urls: URL[]
-    media: EntitiesMedia[]
-}
-
-export interface Hashtag {
-    text: string
-    indices: number[]
-}
-
-export interface EntitiesMedia {
-    id: number
-    id_str: string
-    indices: number[]
-    media_url: string
-    media_url_https: string
-    url: string
-    display_url: string
-    expanded_url: string
-    type: Type
-    original_info: OriginalInfo
-    sizes: Sizes
-    features: Features
-}
-
-export interface Features {
-    medium: OrigClass
-    orig: OrigClass
-    large: OrigClass
-    small: OrigClass
-}
-
-export interface OrigClass {
-    faces: FocusRect[]
-}
-
-export interface FocusRect {
-    x: number
-    y: number
-    h: number
-    w: number
-}
-
-export interface OriginalInfo {
-    width: number
-    height: number
-    focus_rects: FocusRect[]
-}
-
-export interface Sizes {
-    medium: ThumbClass
-    large: ThumbClass
-    small: ThumbClass
-    thumb: ThumbClass
-}
-
-export interface ThumbClass {
-    w: number
-    h: number
-    resize: Resize
-}
-
-export enum Resize {
-    Crop = "crop",
-    Fit = "fit",
-}
-
-export enum Type {
-    Photo = "photo",
 }
 
 export interface URL {
@@ -199,10 +133,18 @@ export interface URL {
     indices: number[]
 }
 
+export interface UserMention {
+    screen_name: string
+    name: string
+    id: number
+    id_str: string
+    indices: number[]
+}
+
 export interface TweetEXT {
-    unmentionInfo: SuperFollowMetadata
     editControl: EditControl
     superFollowMetadata: SuperFollowMetadata
+    unmentionInfo: SuperFollowMetadata
 }
 
 export interface EditControl {
@@ -245,76 +187,6 @@ export interface EXTEditControlInitial {
     is_edit_eligible: boolean
 }
 
-export interface ExtendedEntities {
-    media: ExtendedEntitiesMedia[]
-}
-
-export interface ExtendedEntitiesMedia {
-    id: number
-    id_str: string
-    indices: number[]
-    media_url: string
-    media_url_https: string
-    url: string
-    display_url: string
-    expanded_url: string
-    type: Type
-    original_info: OriginalInfo
-    sizes: Sizes
-    features: Features
-    media_key: string
-    ext_sensitive_media_warning: null
-    ext_media_availability: EXTMediaAvailability
-    ext_alt_text: null | string
-    ext_media_color: MediaColor
-    ext: MediaEXT
-}
-
-export interface MediaEXT {
-    mediaStats: EXTMediaStats
-}
-
-export interface EXTMediaStats {
-    r: REnum
-    ttl: number
-}
-
-export enum REnum {
-    Missing = "Missing",
-}
-
-export interface EXTMediaAvailability {
-    status: Status
-}
-
-export enum Status {
-    Available = "available",
-}
-
-export interface MediaColor {
-    palette: Palette[]
-}
-
-export interface Palette {
-    rgb: RGB
-    percentage: number
-}
-
-export interface RGB {
-    red: number
-    green: number
-    blue: number
-}
-
-export enum Lang {
-    Ja = "ja",
-}
-
-export interface SelfThread {
-    id: number
-    id_str: string
-}
-
 export type Users = Record<string, User>
 
 export interface User {
@@ -325,7 +197,7 @@ export interface User {
     location: string
     description: string
     url: string
-    entities: The1569329809666482176_Entities
+    entities: The1090789616334958592_Entities
     protected: boolean
     followers_count: number
     fast_followers_count: number
@@ -354,12 +226,12 @@ export interface User {
     profile_image_extensions_sensitive_media_warning: null
     profile_image_extensions_media_availability: null
     profile_image_extensions_alt_text: null
-    profile_image_extensions_media_color: MediaColor
+    profile_image_extensions_media_color: ProfileExtensionsMediaColor
     profile_image_extensions: ProfileExtensions
     profile_banner_extensions_sensitive_media_warning: null
     profile_banner_extensions_media_availability: null
     profile_banner_extensions_alt_text: null
-    profile_banner_extensions_media_color: MediaColor
+    profile_banner_extensions_media_color: ProfileExtensionsMediaColor
     profile_banner_extensions: ProfileExtensions
     profile_link_color: string
     profile_sidebar_border_color: string
@@ -372,28 +244,27 @@ export interface User {
     pinned_tweet_ids: any[]
     pinned_tweet_ids_str: any[]
     has_custom_timelines: boolean
-    can_dm: boolean
-    can_media_tag: boolean
-    following: boolean
-    follow_request_sent: boolean
-    notifications: boolean
-    muting: boolean
-    blocking: boolean
-    blocked_by: boolean
-    want_retweets: boolean
+    can_dm: null
+    following: null
+    follow_request_sent: null
+    notifications: null
+    muting: null
+    blocking: null
+    blocked_by: null
+    want_retweets: null
     advertiser_account_type: string
-    advertiser_account_service_levels: any[]
+    advertiser_account_service_levels: string[]
     profile_interstitial_type: string
     business_profile_state: string
     translator_type: string
     withheld_in_countries: any[]
-    followed_by: boolean
+    followed_by: null
     ext_has_nft_avatar: boolean
-    ext: The1569329809666482176_EXT
+    ext: The1090789616334958592_EXT
     require_some_consent: boolean
 }
 
-export interface The1569329809666482176_Entities {
+export interface The1090789616334958592_Entities {
     url: Description
     description: Description
 }
@@ -402,10 +273,10 @@ export interface Description {
     urls: URL[]
 }
 
-export interface The1569329809666482176_EXT {
+export interface The1090789616334958592_EXT {
+    hasNftAvatar: HasNftAvatar
     highlightedLabel: SuperFollowMetadata
     superFollowMetadata: PurpleSuperFollowMetadata
-    hasNftAvatar: HasNftAvatar
 }
 
 export interface HasNftAvatar {
@@ -435,22 +306,36 @@ export interface FluffyOk {
 }
 
 export interface ProfileExtensions {
-    mediaStats: ProfileBannerExtensionsMediaStats
+    mediaStats: MediaStats
 }
 
-export interface ProfileBannerExtensionsMediaStats {
-    r: MediaStatsRClass
+export interface MediaStats {
+    r: MediaStatsR
     ttl: number
 }
 
-export interface MediaStatsRClass {
+export interface MediaStatsR {
     missing: null
+}
+
+export interface ProfileExtensionsMediaColor {
+    palette: Palette[]
+}
+
+export interface Palette {
+    rgb: RGB
+    percentage: number
+}
+
+export interface RGB {
+    red: number
+    green: number
+    blue: number
 }
 
 export interface Timeline {
     id: string
     instructions: Instruction[]
-    responseObjects: ResponseObjects
 }
 
 export interface Instruction {
@@ -474,11 +359,10 @@ export interface EntryContent {
 
 export interface Item {
     content: ItemContent
-    clientEventInfo: ItemClientEventInfo
-    feedbackInfo: FeedbackInfo
+    clientEventInfo: ClientEventInfo
 }
 
-export interface ItemClientEventInfo {
+export interface ClientEventInfo {
     component: Component
     element: Element
     details: Details
@@ -507,19 +391,10 @@ export interface ItemContent {
 export interface ContentTweet {
     id: string
     displayType: DisplayType
-    highlights: Highlights
 }
 
 export enum DisplayType {
     Tweet = "Tweet",
-}
-
-export interface Highlights {
-    textHighlights: any[]
-}
-
-export interface FeedbackInfo {
-    feedbackKeys: string[]
 }
 
 export interface Operation {
@@ -529,25 +404,4 @@ export interface Operation {
 export interface Cursor {
     value: string
     cursorType: string
-}
-
-export interface ResponseObjects {
-    feedbackActions: { [key: string]: FeedbackAction }
-}
-
-export interface FeedbackAction {
-    feedbackType: string
-    prompt: string
-    confirmation: string
-    childKeys?: string[]
-    hasUndoAction: boolean
-    confirmationDisplayType: string
-    clientEventInfo: FeedbackActionClientEventInfo
-    icon?: string
-}
-
-export interface FeedbackActionClientEventInfo {
-    component: Component
-    element: string
-    action: string
 }
