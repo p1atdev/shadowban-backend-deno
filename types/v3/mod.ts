@@ -4,3 +4,4 @@ export { GetTweetDetail, type GetTweetDetailVariables } from "./getTweetDetail.t
 export { GetSearchTypehead, type GetSearchTypeheadQueries } from "./getSearchTypehead.ts"
 export { GetSearchAdaptive, type GetSearchAdaptiveQueries } from "./getSearchAdaptive.ts"
 export { GetUserByRestId, type GetUserByRestIdVariables } from "./getUserByRestId.ts"
+export { GetUserTweets, type GetUserTweetsVariables } from "./getUserTweets.ts"

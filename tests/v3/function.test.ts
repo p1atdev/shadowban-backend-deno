@@ -6,6 +6,7 @@ import {
     GetSearchTypehead,
     GetSearchAdaptive,
     GetUserByRestId,
+    GetUserTweets,
 } from "../../types/v3/mod.ts"
 
 const client = new TwitterAPI()
@@ -30,6 +31,21 @@ Deno.test("get user by rest id", async () => {
 
     assertExists(res.data.user.result.id)
     assertEquals(res.data.user.result.rest_id, twitterRestId)
+})
+
+Deno.test("get user tweets", async () => {
+    const getUserTweets = new GetUserTweets(client)
+    const res = await getUserTweets.get({
+        userId: twitterRestId,
+        count: 10,
+    })
+
+    assertExists(res.data.user.result.timeline_v2.timeline.instructions.find((i) => i.type === "TimelineAddEntries"))
+    assertExists(
+        res.data.user.result.timeline_v2.timeline.instructions
+            .find((i) => i.type === "TimelineAddEntries")
+            ?.entries?.find((e) => e.content.itemContent?.tweet_results.result.legacy.user_id_str === twitterRestId)
+    )
 })
 
 Deno.test("get user tweet and replies", async () => {
