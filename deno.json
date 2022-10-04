@@ -1,0 +1,9 @@
+{
+    "tasks": {
+        "cache": "deno cache -r ./deps.ts",
+        "test": "deno test -A ./tests/v3/function.test.ts ./tests/v3/server.test.ts",
+        "start": "deno run -A ./main.ts",
+        "dev": "deno run -A --watch ./main.ts"
+    },
+    "importMap": "./import_map.json"
+}
