@@ -1,4 +1,4 @@
-import { serve, hono, h, STATUS_TEXT, Status } from "../../deps.ts"
+import { serve, hono, h, Status } from "../../deps.ts"
 import { V3 } from "../functions/v3.ts"
 
 type ReqContext = h.Context<string, hono.Environment, hono.ValidatedData>
