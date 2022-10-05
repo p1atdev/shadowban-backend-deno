@@ -234,7 +234,7 @@ export class V3 {
                     return targetReplyTweet.includes(reply?.id_str)
                 })
 
-            if (filteredReplyTree.length !== 0) {
+            if (filteredReplyTree.length === 0) {
                 const cursors = replyTreeInstruction
                     .flatMap((instruction) => {
                         return instruction.entries
