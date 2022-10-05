@@ -97,7 +97,7 @@ export class V3 {
                 tweetsAndReplies.data.user.result.timeline_v2.timeline.instructions
                     .find((i) => i.type === "TimelineAddEntries")
                     ?.entries?.map((e) => e.content.itemContent?.tweet_results.result)
-                    .filter((r) => r?.legacy.is_quote_status === false)
+                    .filter((r) => r?.legacy.retweeted_status_result === undefined)
                     .map((r) => r?.legacy.id_str)
                     .filter((id) => id !== undefined) ?? []
 
