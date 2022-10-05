@@ -84,7 +84,7 @@ export class V3 {
             const [tweetsAndReplies, searchResults] = await Promise.all([
                 getUserTweetsAndReplies.get({
                     userId: restId,
-                    count: 5,
+                    count: 500,
                 }),
                 getSearchAdaptive.get({
                     q: `from:@${screenName}`,
@@ -96,8 +96,18 @@ export class V3 {
             const expectedTweetIds =
                 tweetsAndReplies.data.user.result.timeline_v2.timeline.instructions
                     .find((i) => i.type === "TimelineAddEntries")
-                    ?.entries?.map((e) => e.content.itemContent?.tweet_results.result.rest_id)
-                    .filter((id) => id) ?? []
+                    ?.entries?.map((e) => e.content.itemContent?.tweet_results.result)
+                    .filter((r) => r?.legacy.is_quote_status === false)
+                    .map((r) => r?.legacy.id_str)
+                    .filter((id) => id !== undefined) ?? []
+
+            if (expectedTweetIds.length === 0) {
+                // could not determine if user is search banned
+                return {
+                    screenName: screenName,
+                    banned: false,
+                }
+            }
 
             const actualTweetIds = Object.keys(searchResults.globalObjects.tweets)
 
