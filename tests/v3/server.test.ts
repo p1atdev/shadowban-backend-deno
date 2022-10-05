@@ -81,13 +81,13 @@ Deno.test("/v2/search_ban expected not to be banned", async () => {
     const res = await fetch(API_URL + "/v2/search_ban", {
         method: "POST",
         body: JSON.stringify({
-            screenName: "twitter",
+            screenName: "discord_jp",
         }),
     })
     const body = await res.json()
     const expected: SearchBan = {
         banned: false,
-        screenName: "twitter",
+        screenName: "discord_jp",
     }
     assertEquals(body, expected)
 })
