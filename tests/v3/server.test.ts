@@ -108,7 +108,7 @@ Deno.test("/v2/search_ban expected to be banned", async () => {
 })
 
 Deno.test("/v2/reply_ban expected not to be banned (slow)", async () => {
-    const restId = "783214"
+    const restId = "1090789616334958592"
     const res = await fetch(API_URL + "/v2/reply_ban", {
         method: "POST",
         body: JSON.stringify({
@@ -117,7 +117,7 @@ Deno.test("/v2/reply_ban expected not to be banned (slow)", async () => {
     })
     const body = await res.json()
     const expected: ReplyBan = {
-        restId: "783214",
+        restId: "1090789616334958592",
         recognizable: true,
         ghostBanned: false,
         replyDeboosting: false,
