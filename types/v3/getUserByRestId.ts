@@ -6,6 +6,7 @@ export interface GetUserByRestIdVariables {
 }
 
 const GetUserTweetsAndRepliesFeatures = {
+    verified_phone_label_enabled: false,
     responsive_web_graphql_timeline_navigation_enabled: false,
 }
 

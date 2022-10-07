@@ -6,6 +6,7 @@ export interface GetUserByScreenNameVariables {
 }
 
 const GetUserTweetsAndRepliesFeatures = {
+    verified_phone_label_enabled: false,
     responsive_web_graphql_timeline_navigation_enabled: false,
 }
 
@@ -109,7 +110,7 @@ export interface Legacy {
     url: string
     verified: boolean
     want_retweets: boolean
-    withheld_in_countries: any[]
+    withheld_in_countries: unknown[]
 }
 
 export interface Entities {
