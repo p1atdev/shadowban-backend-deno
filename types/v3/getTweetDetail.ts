@@ -7,6 +7,7 @@ export interface GetTweetDetailVariables {
 }
 
 const GetUserTweetsAndRepliesFeatures = {
+    verified_phone_label_enabled: false,
     responsive_web_graphql_timeline_navigation_enabled: false,
     unified_cards_ad_metadata_container_dynamic_card_content_query_enabled: false,
     tweetypie_unmention_optimization_enabled: false,
